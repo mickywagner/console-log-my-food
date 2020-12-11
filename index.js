@@ -16,13 +16,20 @@ readline.on("line", async (line) => {
       {
         const { data } = await Axios.get(`http://localhost:3001/food`);
         function* listVeganFoods() {
-          let idx = 0;
-          const veganOnly = data.filter((food) =>
-            food.dietary_preferences.includes("vegan")
-          );
-          while (veganOnly[idx]) {
-            yield veganOnly[idx];
-            idx++;
+          try {
+            let idx = 0;
+            const veganOnly = data.filter((food) =>
+              food.dietary_preferences.includes("vegan")
+            );
+            while (veganOnly[idx]) {
+              yield veganOnly[idx];
+              idx++;
+            }
+          } catch (error) {
+            console.log(
+              "Something went wrong while listing vegan items",
+              error
+            );
           }
         }
         for (let val of listVeganFoods()) {
@@ -31,15 +38,19 @@ readline.on("line", async (line) => {
         readline.prompt();
       }
       break;
-    case "log": 
+    case "log":
       const { data } = await Axios.get(`http://localhost:3001/food`);
       const it = data[Symbol.iterator]();
       let actionIt;
 
       function* actionGenerator() {
+        try {
           const food = yield;
-          const servingSize = yield askForServingSize()
-          yield displayCalories(servingSize, food)
+          const servingSize = yield askForServingSize();
+          yield displayCalories(servingSize, food);
+        } catch (error) {
+          console.log({ error });
+        }
       }
 
       function askForServingSize(food) {
@@ -48,6 +59,8 @@ readline.on("line", async (line) => {
           (servingSize) => {
             if (servingSize === "nevermind" || servingSize === "n") {
               actionIt.return();
+            } else if (typeof servingSize !== "number" || servingSize === NaN) {
+              actionIt.throw("Please, only numbers");
             } else {
               actionIt.next(servingSize);
             }
@@ -96,9 +109,11 @@ readline.on("line", async (line) => {
         while (!position.done) {
           const food = position.value.name;
           if (food === item) {
-            console.log(`A single serving of ${item} has ${position.value.calories} calories.`);
-            actionIt = actionGenerator()
-            actionIt.next()
+            console.log(
+              `A single serving of ${item} has ${position.value.calories} calories.`
+            );
+            actionIt = actionGenerator();
+            actionIt.next();
             actionIt.next(position.value);
           }
           position = it.next();
@@ -107,46 +122,50 @@ readline.on("line", async (line) => {
       });
       break;
     case `today's log`:
-        readline.question('Email ', async emailAddress => {
-            const { data } = await Axios.get(
-                `http://localhost:3001/users?email=${emailAddress}`
-            )
-            const foodLog = data[0].log || []
-            let totalCalories = 0
+      readline.question("Email ", async (emailAddress) => {
+        const { data } = await Axios.get(
+          `http://localhost:3001/users?email=${emailAddress}`
+        );
+        const foodLog = data[0].log || [];
+        let totalCalories = 0;
 
-            function* getFoodLog() {
-                yield* foodLog
-            }
+        function* getFoodLog() {
+            try {
+                yield* foodLog;
 
-            const logIterator = getFoodLog()
-            
-            for (const entry of logIterator) {
-                const timestamp = Object.keys(entry)[0]
-                if(isToday(new Date(Number(timestamp)))) {
-                    console.log(
-                        `${entry[timestamp].food}, ${entry[timestamp].servingSize} serving(s)`,
-                    )
-                    totalCalories += entry[timestamp].calories
-                    if (totalCalories >= 12000) {
-                        console.log(`Impressive! You've reached 12,000 calories`)
-                        logIterator.return()
-                    }
-                 }
+            } catch (error) {
+                console.log('Error while reading the food log', error)
             }
-            console.log('----------------------')
-            console.log(`Total Calories: ${totalCalories}`)
-            readline.prompt()
-        })
-        break;
-    }
+        }
+
+        const logIterator = getFoodLog();
+
+        for (const entry of logIterator) {
+          const timestamp = Object.keys(entry)[0];
+          if (isToday(new Date(Number(timestamp)))) {
+            console.log(
+              `${entry[timestamp].food}, ${entry[timestamp].servingSize} serving(s)`
+            );
+            totalCalories += entry[timestamp].calories;
+            if (totalCalories >= 12000) {
+              console.log(`Impressive! You've reached 12,000 calories`);
+              logIterator.return();
+            }
+          }
+        }
+        console.log("----------------------");
+        console.log(`Total Calories: ${totalCalories}`);
+        readline.prompt();
+      });
+      break;
   }
-);
+});
 
 function isToday(timestamp) {
-    const today = new Date()
-    return (
-        timestamp.getDate() === today.getDate() &&
-        timestamp.getMonth() === today.getMonth() &&
-        timestamp.getFullYear() === today.getFullYear()
-    )
+  const today = new Date();
+  return (
+    timestamp.getDate() === today.getDate() &&
+    timestamp.getMonth() === today.getMonth() &&
+    timestamp.getFullYear() === today.getFullYear()
+  );
 }
