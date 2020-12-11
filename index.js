@@ -69,6 +69,10 @@ readline.on("line", async (line) => {
             return() {
                 positions = [];
                 return { done: true }
+            },
+            throw (error) {
+                console.log(error);
+                return { value: undefined, done: true }
             }
           };
         },
