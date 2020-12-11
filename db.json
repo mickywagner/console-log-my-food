@@ -21,5 +21,14 @@
             "serving_size": 8,
             "serving_size_units": "oz"
         }
+    ],
+
+    "users": [
+        {
+            "id": 1,
+            "firstName": "Sam",
+            "lastName": "Davies",
+            "email": "sam@acme.com"
+        }
     ]
 }
