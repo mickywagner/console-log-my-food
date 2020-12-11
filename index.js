@@ -36,35 +36,11 @@ readline.on("line", async (line) => {
       const it = data[Symbol.iterator]();
       let actionIt;
 
-      const actionIterator = {
-        [Symbol.iterator]() {
-          let positions = [...this.actions];
-
-          return {
-            [Symbol.iterator]() {
-              return this;
-            },
-            next(...args) {
-              if (positions.length > 0) {
-                const position = positions.shift();
-                const result = position(...args);
-                return { value: result, done: false };
-              } else {
-                return { done: true };
-              }
-            },
-            return() {
-              positions = [];
-              return { done: true };
-            },
-            throw(error) {
-              console.log(error);
-              return { value: undefined, done: true };
-            },
-          };
-        },
-        actions: [askForServingSize, displayCalories],
-      };
+      function* actionGenerator() {
+          const food = yield;
+          const servingSize = yield askForServingSize()
+          yield displayCalories(servingSize, food)
+      }
 
       function askForServingSize(food) {
         readline.question(
@@ -73,7 +49,7 @@ readline.on("line", async (line) => {
             if (servingSize === "nevermind" || servingSize === "n") {
               actionIt.return();
             } else {
-              actionIt.next(servingSize, food);
+              actionIt.next(servingSize);
             }
           }
         );
@@ -120,8 +96,9 @@ readline.on("line", async (line) => {
         while (!position.done) {
           const food = position.value.name;
           if (food === item) {
-            console.log(`${item} has ${position.value.calories} calories.`);
-            actionIt = actionIterator[Symbol.iterator]();
+            console.log(`A single serving of ${item} has ${position.value.calories} calories.`);
+            actionIt = actionGenerator()
+            actionIt.next()
             actionIt.next(position.value);
           }
           position = it.next();

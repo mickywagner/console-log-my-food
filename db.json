@@ -129,6 +129,13 @@
             "servingSize": "2",
             "calories": 460
           }
+        },
+        {
+          "1607724987688": {
+            "food": "broccoli",
+            "servingSize": "2",
+            "calories": 60
+          }
         }
       ]
     }
