@@ -16,7 +16,9 @@ readline.on('line', line => {
             {
                 Axios.get(`http://localhost:3001/food`).then(({data}) => {
                     let idx = 0;
-
+                    const veganOnly = data.filter(food => {
+                        return food.dietary_preferences.includes('vegan')
+                    })
                     const veganIterable = {
                         [Symbol.iterator]() {
                             return {
@@ -24,7 +26,7 @@ readline.on('line', line => {
                                     return this;
                                 },
                                 next() {
-                                    const current = data[idx];
+                                    const current = veganOnly[idx];
                                     idx++;
                                     if (current) {
                                         return { value: current, done: false};
