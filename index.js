@@ -92,17 +92,40 @@ readline.on("line", async (line) => {
           );
       }
 
-      function displayCalories(servingSize, food) {
-        const calories = food.calories
+      async function displayCalories(servingSize = 1, food) {
+        const calories = food.calories;
         console.log(
           `${
             food.name
-          } with a serving size of ${servingSize} has a ${Number.parseFloat(
-            calories * parseInt(servingSize, 10)
-          ).toFixed()} calories`
+          } with a serving size of ${servingSize} has ${Number.parseFloat(
+            calories * parseInt(servingSize, 10),
+          ).toFixed()} calories.`,
         );
-        actionIt.next()
-        readline.prompt()
+        const { data } = await Axios.get(`http://localhost:3001/users/1`);
+        const usersLog = data.log || [];
+        const putBody = {
+          ...data,
+          log: [
+            ...usersLog,
+            {
+              [Date.now()]: {
+                food: food.name,
+                servingSize,
+                calories: Number.parseFloat(
+                  calories * parseInt(servingSize, 10),
+                ),
+              },
+            },
+          ],
+        };
+        await Axios.put(`http://localhost:3001/users/1`, putBody, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        actionIt.next();
+        readline.prompt();
       }
 
       readline.question("What would you like to log today?", async (item) => {
