@@ -117,15 +117,21 @@ readline.on("line", async (line) => {
             function* getFoodLog() {
                 yield* foodLog
             }
+
+            const logIterator = getFoodLog()
             
-            for (const entry of getFoodLog()) {
+            for (const entry of logIterator) {
                 const timestamp = Object.keys(entry)[0]
                 if(isToday(new Date(Number(timestamp)))) {
                     console.log(
                         `${entry[timestamp].food}, ${entry[timestamp].servingSize} serving(s)`,
                     )
                     totalCalories += entry[timestamp].calories
-                }
+                    if (totalCalories >= 12000) {
+                        console.log(`Impressive! You've reached 12,000 calories`)
+                        logIterator.return()
+                    }
+                 }
             }
             console.log('----------------------')
             console.log(`Total Calories: ${totalCalories}`)

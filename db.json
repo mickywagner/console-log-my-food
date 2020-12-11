@@ -136,6 +136,41 @@
             "servingSize": "2",
             "calories": 60
           }
+        },
+        {
+          "1607726195342": {
+            "food": "chicken breast",
+            "servingSize": "20",
+            "calories": 2500
+          }
+        },
+        {
+          "1607726241629": {
+            "food": "cheddar cheese",
+            "servingSize": "15",
+            "calories": 1800
+          }
+        },
+        {
+          "1607726256389": {
+            "food": "ribeye steak",
+            "servingSize": "10",
+            "calories": 5000
+          }
+        },
+        {
+          "1607726282942": {
+            "food": "almonds",
+            "servingSize": "14",
+            "calories": 2296
+          }
+        },
+        {
+          "1607726295531": {
+            "food": "oreos",
+            "servingSize": "10",
+            "calories": 2300
+          }
         }
       ]
     }
